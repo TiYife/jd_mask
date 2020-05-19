@@ -100,7 +100,10 @@ def get_sku_title():
     resp = session.get(url).content
     x_data = etree.HTML(resp)
     sku_title = x_data.xpath('/html/head/title/text()')
-    return sku_title[0]
+    if len(sku_title) != 0:
+        return sku_title[0]
+    else:
+        return ""
 
 def send_wechat(message):
     """推送信息到微信"""

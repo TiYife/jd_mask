@@ -15,7 +15,8 @@ class Jd_Mask_Spider(object):
         self.seckill_init_info = dict()
         self.seckill_url = dict()
         self.seckill_order_data = dict()
-        self.timers = Timer()
+        self.buy_timer = Timer("buy")
+        self.reserve_timer = Timer("reserve")
         self.default_user_agent = global_config.getRaw('config', 'DEFAULT_USER_AGENT')
 
     def login(self):
@@ -58,7 +59,7 @@ class Jd_Mask_Spider(object):
         resp = self.session.get(url=url, params=payload, headers=headers)
         resp_json = parse_json(resp.text)
         reserve_url = resp_json.get('url')
-        self.timers.start()
+        self.reserve_timer.start()
         while True:
             try:
                 self.session.get(url='https:' + reserve_url)
@@ -128,7 +129,7 @@ class Jd_Mask_Spider(object):
         """访问商品的抢购链接（用于设置cookie等"""
         logger.info('用户:{}'.format(self.get_username()))
         logger.info('商品名称:{}'.format(get_sku_title()))
-        self.timers.start()
+        self.buy_timer.start()
         self.seckill_url[self.sku_id] = self.get_seckill_url()
         logger.info('访问商品的抢购连接...')
         headers = {
