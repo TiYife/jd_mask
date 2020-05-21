@@ -7,6 +7,7 @@ import requests
 from util import parse_json, get_session, get_sku_title,send_wechat
 from config import global_config
 
+
 class Jd_Mask_Spider(object):
     def __init__(self):
         # 初始化信息
@@ -123,8 +124,8 @@ class Jd_Mask_Spider(object):
                 logger.info("抢购链接获取成功: %s", seckill_url)
                 return seckill_url
             else:
-                logger.info("抢购链接获取失败，%s不是抢购商品或抢购页面暂未刷新，1秒后重试")
-                time.sleep(1)
+                logger.info("抢购链接获取失败，%s不是抢购商品或抢购页面暂未刷新，0.01秒后重试")
+                time.sleep(0.01)
 
     def request_seckill_url(self):
         """访问商品的抢购链接（用于设置cookie等"""
@@ -150,7 +151,7 @@ class Jd_Mask_Spider(object):
         url = 'https://marathon.jd.com/seckill/seckill.action'
         payload = {
             'skuId': self.sku_id,
-            'num': 1,
+            'num': self.buy_num,
             'rid': int(time.time())
         }
         headers = {
@@ -168,7 +169,7 @@ class Jd_Mask_Spider(object):
         url = 'https://marathon.jd.com/seckillnew/orderService/pc/init.action'
         data = {
             'sku': self.sku_id,
-            'num': 1,
+            'num': self.buy_num,
             'isModifyAddress': 'false',
         }
         headers = {
@@ -191,7 +192,7 @@ class Jd_Mask_Spider(object):
         token = init_info['token']
         data = {
             'skuId': self.sku_id,
-            'num': 1,
+            'num': self.buy_num,
             'addressId': default_address['id'],
             'yuShou': 'true',
             'isModifyAddress': 'false',
