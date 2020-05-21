@@ -13,7 +13,7 @@ class Jd_Mask_Spider(object):
         # 初始化信息
         self.session = get_session()
         self.sku_id = global_config.getRaw('config', 'sku_id')
-        self.buy_num = global_config.getRaw('config', 'buy_num')
+        self.buy_num = 2
         self.seckill_init_info = dict()
         self.seckill_url = dict()
         self.seckill_order_data = dict()
