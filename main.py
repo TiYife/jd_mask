@@ -2,6 +2,7 @@ import sys
 import time
 
 from jd_mask_spider_requests import Jd_Mask_Spider
+from util import send_wechat
 
 if __name__ == '__main__':
     a = """
@@ -20,11 +21,13 @@ if __name__ == '__main__':
         start_tool.make_reserve()
     elif choice_function == '2':
         start_tool.request_seckill_url()
-        start_tool.request_seckill_checkout_page()
+        # start_tool.request_seckill_checkout_page()
         for i in range(200):
             print("第"+str(i)+"次提交订单：")
-            start_tool.submit_seckill_order()
+            if start_tool.submit_seckill_order():
+                break
             time.sleep(0.01)
+        send_wechat(start_tool.result_message)
     else:
         print('没有此功能')
         sys.exit(1)

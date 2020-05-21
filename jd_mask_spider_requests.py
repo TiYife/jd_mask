@@ -20,6 +20,7 @@ class Jd_Mask_Spider(object):
         self.buy_timer = Timer("buy")
         self.reserve_timer = Timer("reserve")
         self.default_user_agent = global_config.getRaw('config', 'DEFAULT_USER_AGENT')
+        self.result_message = ""
 
     def login(self):
         for flag in range(1, 3):
@@ -267,11 +268,13 @@ class Jd_Mask_Spider(object):
                 )
             if global_config.getRaw('messenger', 'enable') == 'true':
                 success_message = "抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}".format(order_id, total_money, pay_url)
-                send_wechat(success_message)
+                self.result_message = success_message
+                # send_wechat(success_message)
             return True
         else:
             logger.info('抢购失败，返回信息:{}'.format(resp_json))
             if global_config.getRaw('messenger', 'enable') == 'true':
                 error_message = '抢购失败，返回信息:{}'.format(resp_json)
-                send_wechat(error_message)
+                # send_wechat(error_message)
+                self.result_message = error_message
             return False
