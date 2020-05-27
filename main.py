@@ -22,6 +22,7 @@ if __name__ == '__main__':
     elif choice_function == '2':
         start_tool.request_seckill_url()
         start_tool.request_seckill_checkout_page()
+
         for i in range(200):
             print("第"+str(i)+"次提交订单：")
             if start_tool.submit_seckill_order():

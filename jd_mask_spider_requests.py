@@ -4,7 +4,7 @@ import time
 from jdlogger import logger
 from timer import Timer
 import requests
-from util import parse_json, get_session, get_sku_title,send_wechat
+from util import parse_json, get_session, get_sku_title, send_wechat
 from config import global_config
 
 
@@ -237,8 +237,9 @@ class Jd_Mask_Spider(object):
         payload = {
             'skuId': self.sku_id,
         }
-        self.seckill_order_data[self.sku_id] = self._get_seckill_order_data(
-            )
+        if not self.seckill_init_info.get(self.sku_id):
+            self.seckill_order_data[self.sku_id] = self._get_seckill_order_data()
+
         logger.info('提交抢购订单...')
         headers = {
             'User-Agent': self.default_user_agent,
@@ -246,13 +247,16 @@ class Jd_Mask_Spider(object):
             'Referer': 'https://marathon.jd.com/seckill/seckill.action?skuId={0}&num={1}&rid={2}'.format(
                 self.sku_id, self.buy_num, int(time.time())),
         }
-        resp = self.session.post(
-            url=url,
-            params=payload,
-            data=self.seckill_order_data.get(
-                self.sku_id),
-            headers=headers)
-        resp_json = parse_json(resp.text)#
+
+        resp_json = None
+        try:
+            resp = self.session.post(url=url, params=payload, data=self.seckill_order_data.get(self.sku_id),
+                                     headers=headers, timeout=5)
+            resp_json = parse_json(resp.text)
+        except Exception as e:
+            error_message = '抢购失败，返回信息:{}'.format(str(e))
+            logger.info(error_message)
+            self.result_message = error_message
         # 返回信息
         # 抢购失败：
         # {'errorMessage': '很遗憾没有抢到，再接再厉哦。', 'orderId': 0, 'resultCode': 60074, 'skuId': 0, 'success': False}
@@ -265,8 +269,8 @@ class Jd_Mask_Spider(object):
             total_money = resp_json.get('totalMoney')
             pay_url = 'https:' + resp_json.get('pcUrl')
             logger.info(
-                '抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}'.format(order_id,total_money,pay_url)
-                )
+                '抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}'.format(order_id, total_money, pay_url)
+            )
             if global_config.getRaw('messenger', 'enable') == 'true':
                 success_message = "抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}".format(order_id, total_money, pay_url)
                 self.result_message = success_message
