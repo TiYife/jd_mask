@@ -4,7 +4,7 @@ import time
 from jdlogger import logger
 from timer import Timer
 import requests
-from util import parse_json, get_session, get_sku_title, send_wechat
+from util import parse_json, get_session, get_sku_title,send_wechat
 from config import global_config
 
 
@@ -125,8 +125,8 @@ class Jd_Mask_Spider(object):
                 logger.info("抢购链接获取成功: %s", seckill_url)
                 return seckill_url
             else:
-                logger.info("抢购链接获取失败，%s不是抢购商品或抢购页面暂未刷新，0.01秒后重试")
-                time.sleep(0.01)
+                logger.info("抢购链接获取失败，%s不是抢购商品或抢购页面暂未刷新，0.02秒后重试")
+                time.sleep(0.02)
 
     def request_seckill_url(self):
         """访问商品的抢购链接（用于设置cookie等"""
@@ -188,6 +188,7 @@ class Jd_Mask_Spider(object):
         # 获取用户秒杀初始化信息
         self.seckill_init_info[self.sku_id] = self._get_seckill_init_info()
         init_info = self.seckill_init_info.get(self.sku_id)
+        print(init_info)
         default_address = init_info['addressList'][0]  # 默认地址dict
         invoice_info = init_info.get('invoiceInfo', {})  # 默认发票信息dict, 有可能不返回
         token = init_info['token']
@@ -236,9 +237,8 @@ class Jd_Mask_Spider(object):
         payload = {
             'skuId': self.sku_id,
         }
-        if not self.seckill_order_data.get(self.sku_id):
-            self.seckill_order_data[self.sku_id] = self._get_seckill_order_data()
-
+        self.seckill_order_data[self.sku_id] = self._get_seckill_order_data(
+            )
         logger.info('提交抢购订单...')
         headers = {
             'User-Agent': self.default_user_agent,
@@ -246,17 +246,13 @@ class Jd_Mask_Spider(object):
             'Referer': 'https://marathon.jd.com/seckill/seckill.action?skuId={0}&num={1}&rid={2}'.format(
                 self.sku_id, self.buy_num, int(time.time())),
         }
-
-        resp_json = None
-        try:
-            resp = self.session.post(url=url, params=payload, data=self.seckill_order_data.get(self.sku_id),
-                                     headers=headers, timeout=5)
-            resp_json = parse_json(resp.text)
-        except Exception as e:
-            error_message = '抢购失败，返回信息:{}'.format(str(e))
-            self.result_message = error_message
-            return False
-
+        resp = self.session.post(
+            url=url,
+            params=payload,
+            data=self.seckill_order_data.get(
+                self.sku_id),
+            headers=headers)
+        resp_json = parse_json(resp.text)#
         # 返回信息
         # 抢购失败：
         # {'errorMessage': '很遗憾没有抢到，再接再厉哦。', 'orderId': 0, 'resultCode': 60074, 'skuId': 0, 'success': False}
@@ -269,8 +265,8 @@ class Jd_Mask_Spider(object):
             total_money = resp_json.get('totalMoney')
             pay_url = 'https:' + resp_json.get('pcUrl')
             logger.info(
-                '抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}'.format(order_id, total_money, pay_url)
-            )
+                '抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}'.format(order_id,total_money,pay_url)
+                )
             if global_config.getRaw('messenger', 'enable') == 'true':
                 success_message = "抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}".format(order_id, total_money, pay_url)
                 self.result_message = success_message
