@@ -60,7 +60,8 @@ USER_AGENTS = [
 def parse_json(s):
     begin = s.find('{')
     end = s.rfind('}') + 1
-    return json.loads(s[begin:end])
+    # return json.loads(s[begin:end])
+    return json.loads('{}' if s[begin:end] == '' else s[begin:end])
 
 def get_random_useragent():
     """生成随机的UserAgent
